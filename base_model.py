@@ -9,30 +9,31 @@ from image_collector import image_paths, image_dir
 
 # generating vector embeddings 
 class ImageEmbedder: 
-    model = models.resnet50(pretrained=True)
+    def __init__(self):
+        self.model = models.resnet50(weights='DEFAULT')
     
-    model = torch.nn.Sequential(*list(model.children())[:-1])
-    model.eval()
+        self.model = torch.nn.Sequential(*list(self.model.children())[:-1])
+        self.model.eval()
 
     # scaling all images and normalizing them 
-    transform = transforms.Compose([
-        transforms.Resize(256),
-        transforms.CenterCrop(224),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                             std=[0.229, 0.224, 0.225]),
-    ]) 
+        self.transform = transforms.Compose([
+            transforms.Resize(256),
+            transforms.CenterCrop(224),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                std=[0.229, 0.224, 0.225]),
+        ]) 
 
-    @staticmethod
-    def get_images_embedded(image_path): 
+    # @staticmethod
+    def get_embedding(self, image_path): 
         # load and transform the image 
         img = Image.open(image_path).convert('RGB')
-        img_t = ImageEmbedder.transform(img)
+        img_t = self.transform(img)
         batch_t = torch.unsqueeze(img_t, 0)
 
         # get the embedding using the model resnet50 
         with torch.no_grad(): 
-            embedding = ImageEmbedder.model(batch_t)
+            embedding = self.model(batch_t)
 
         # return the embedding as a numpy array
         return embedding.squeeze().cpu().numpy()

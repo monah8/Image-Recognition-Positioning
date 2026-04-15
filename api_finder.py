@@ -5,12 +5,12 @@ from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 import os 
 import tempfile 
-from base_model import ImagerEmbedder
+from base_model import ImageEmbedder
 from vectors_storing import VectorsStoring
 
 
 class APIServer: 
-    # nest_asyncio.apply() #applying nest_asyncio to allow nested event loops
+    nest_asyncio.apply() 
 
     app = FastAPI() 
 
@@ -28,12 +28,12 @@ class APIServer:
         limit: int = 5 
     ): 
 
-        with tempfile.NamedTemporaryFile(delete=False, sfx = '.jpg') as tmp_file: 
+        with tempfile.NamedTemporaryFile(delete=False, suffix = '.jpg') as tmp_file: 
             tmp_file.write(await file.read()) 
             tmp_file_path = tmp_file.name
 
         try:  
-            query_embedding = ImagerEmbedder.get_images_embedded(tmp_file_path)
+            query_embedding = ImageEmbedder.get_images_embedded(tmp_file_path)
 
             search_results = VectorsStoring.client.search(
                 collection_name="product_images", 
@@ -54,8 +54,8 @@ class APIServer:
         finally: 
             os.unlink(tmp_file_path) 
 
-    def run_fastapi(host="127.0.0.1", port = 8000):
-        server = uvicorn.Server(config = uvicorn.Config(app=app, host=host, port=port))
+    def run_fastapi(self, host="127.0.0.1", port = 8000):
+        server = uvicorn.Server(config = uvicorn.Config(app=self.app, host=host, port=port))
 
         thread = threading.Thread(target=server.run)
         thread.daemon = True 
@@ -64,6 +64,10 @@ class APIServer:
         print(f"FastAPI runnning on http://{host}:{port}")
         return thread
     
+server = APIServer()
+fastapi_thread = server.run_fastapi()
+fastapi_thread.join()
+
 from IPython.display import display, HTML 
 display(HTML('<a href = "http://127.0.0.1:8000/docs" target="_blank">Open FastAPI Swagger UI</a>'))
 
