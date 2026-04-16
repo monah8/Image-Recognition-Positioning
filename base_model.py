@@ -5,7 +5,7 @@ import torch
 from torchvision import models, transforms
 from PIL import Image
 import os 
-from image_collector import image_paths, image_dir
+import image_collector 
 
 # generating vector embeddings 
 class ImageEmbedder: 
@@ -39,15 +39,15 @@ class ImageEmbedder:
         return embedding.squeeze().cpu().numpy()
 
     # generate embeddings for a list of image paths 
-embeddings = {}
-for image_path in tqdm(image_paths, desc="Generating image embeddings"):
-    try:
-        img_id = os.path.basename(image_path.split('.')[0])  # Extract image ID from filename
+#embeddings = {}
+#for image_path in tqdm(image_collector.get_all_images(), desc="Generating image embeddings"):
+ #   try:
+  #      img_id = os.path.basename(image_path.split('.')[0])  # Extract image ID from filename
 
-        embedding = ImageEmbedder.get_images_embedded(image_path)
-        embeddings[img_id] = embedding
+   #     embedding = ImageEmbedder.get_images_embedded(image_path)
+    #    embeddings[img_id] = embedding
 
-    except Exception as e: 
-        print(f'Error processing {image_path}: {e}')
+    #except Exception as e: 
+     #   print(f'Error processing {image_path}: {e}')
 
-print(f'Generated embeddings for {len(embeddings)} images.')       
+#print(f'Generated embeddings for {len(embeddings)} images.')       

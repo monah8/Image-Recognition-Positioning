@@ -4,7 +4,7 @@ from vectors_storing import VectorsStoring
 import os
 from tqdm import tqdm
 
-class Orchestrator:
+class IndexingOrchestrator:
     def __init__(self):
         self.data_dir = '/home/monah/Project-ComputerVision-AI/py_verse/data'
         self.embedder = ImageEmbedder()
@@ -35,5 +35,5 @@ class Orchestrator:
         return all_embeddings
     
 if __name__ == "__main__":
-    orchestrator = Orchestrator()
+    orchestrator = IndexingOrchestrator()
     orchestrator.run_full_indexing()

@@ -1,15 +1,13 @@
 from qdrant_client import QdrantClient
 from qdrant_client.models import VectorParams, Distance, PointStruct
-from base_model import embeddings
-from image_collector import image_paths, image_dir
 
 class VectorsStoring:
     def __init__(self, collection_name="positions_dataset"): 
         self.collection_name = collection_name
 
-        self.client = QdrantClient(path="./qdrant_data")
+        self.client = QdrantClient(path="./qdrant_db")
 
-    def upload_embeddings(self, embeddings_dicts, image_dir, batch_size=10):
+    def upload_embeddings(self, embeddings_dicts, batch_size=10):
         vector_size = next(iter(embeddings_dicts.values())).shape[0]
 
         self.client.recreate_collection(

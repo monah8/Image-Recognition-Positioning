@@ -9,10 +9,10 @@ class InferenceOrchestrator:
     def search(self, image_path, limit=5): 
         vector = self.embedder.get_embedding(image_path)
 
-        search_results = self.storage.client.search(
+        search_results = self.storage.client.query_points(
             collection_name=self.storage.collection_name,
-            query_vector=vector.tolist(),
+            query=vector.tolist() if hasattr(vector, 'tolist') else vector,
             limit=limit
-        )
+        ).points
         
         return search_results     

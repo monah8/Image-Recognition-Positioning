@@ -1,6 +1,6 @@
 import uvicorn 
 import threading 
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, Request
 from fastapi.middleware.cors import CORSMiddleware
 import os 
 import tempfile 
@@ -23,8 +23,9 @@ class APIServer:
     
     def setup_routes(self):
 
-        @self.app.post("/search")
+        @self.app.post("/locate")
         async def search_similar(
+            request: Request,
             file: UploadFile = File(...), 
             limit: int = 5 
         ): 
@@ -34,7 +35,7 @@ class APIServer:
 
             try:  
                 # query_embedding = ImageEmbedder.get_images_embedded(tmp_file_path)
-                search_results = self.engine.search(
+                search_results = request.app.state.engine.search(
                 tmp_file_path, 
                 limit = limit 
                 ) 
