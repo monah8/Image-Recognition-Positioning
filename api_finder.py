@@ -1,10 +1,12 @@
 import uvicorn 
 import threading 
-from fastapi import FastAPI, UploadFile, File, Request
+from fastapi import FastAPI, UploadFile, File, Request 
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 import os 
 import tempfile 
 from inference_orchestrator import InferenceOrchestrator
+import requests
 
 class APIServer: 
     def __init__(self): 
@@ -37,16 +39,38 @@ class APIServer:
                 # query_embedding = ImageEmbedder.get_images_embedded(tmp_file_path)
                 search_results = request.app.state.engine.search(
                 tmp_file_path, 
-                limit = limit 
+                limit = 1 
                 ) 
-                result = [] 
-                for res in search_results: 
-                    result.append({
-                        # "image_path": res.payload["image_path"],
-                        "name": res.payload["name"],
-                        "score": res.score
-                    }) 
-                return {"success": result}
+
+                if not search_results:
+                    return {"success": False, "error": "No results found"}
+                
+                best_match = search_results[0]
+                matched_file_name = best_match.payload.get("name")+".jpg"
+
+                dataset_dir = '/home/monah/Project-ComputerVision-AI/py_verse/data'
+                full_image_path = os.path.join(dataset_dir, matched_file_name)
+
+                try: 
+                    r = requests.get(f"http://localhost:9000/coords/{matched_file_name}", timeout=2)
+                    
+                    if r.status_code == 200:
+                        db_data = r.json()
+                        return {"success": True, 
+                                "match_score": float(best_match.score),
+                                "matched_with": matched_file_name,
+                                "coordinates": db_data.get("data")
+                                  }
+                
+                    else:
+                        return {"success": False,
+                                "error": "Matched file not found", 
+                                "matched_file": matched_file_name, 
+                                }
+                except requests.exceptions.RequestException:
+                    return {"success": False, 
+                            "error": "Failed to connect to Django API", 
+                            } 
         
             finally: 
                 if os.path.exists(tmp_file_path): 

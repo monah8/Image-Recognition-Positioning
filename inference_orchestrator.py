@@ -15,4 +15,5 @@ class InferenceOrchestrator:
             limit=limit
         ).points
         
+        print(f"Search results for {image_path}: {search_results}")
         return search_results     
