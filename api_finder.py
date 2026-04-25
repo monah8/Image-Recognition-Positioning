@@ -31,6 +31,8 @@ class APIServer:
             file: UploadFile = File(...), 
             limit: int = 5 
         ): 
+            print(f"DEBUG: Content-type = {request.headers.get('Content-Type')}")
+
             with tempfile.NamedTemporaryFile(delete=False, suffix = '.jpg') as tmp_file: 
                 tmp_file.write(await file.read()) 
                 tmp_file_path = tmp_file.name
@@ -56,20 +58,22 @@ class APIServer:
                     
                     if r.status_code == 200:
                         db_data = r.json()
-                        return {"success": True, 
-                                "match_score": float(best_match.score),
-                                "matched_with": matched_file_name,
-                                "coordinates": db_data.get("data")
+                        coords = db_data.get("data", {})
+                        
+                        return {"status": "success", 
+                                "x": coords.get("x"),
+                                "y": coords.get("y"),
+                                "z": coords.get("z"),
+                                "message": "ok"
                                   }
                 
                     else:
-                        return {"success": False,
-                                "error": "Matched file not found", 
-                                "matched_file": matched_file_name, 
+                        return {"status": "error",
+                                "message": "Matched file not found",  
                                 }
-                except requests.exceptions.RequestException:
-                    return {"success": False, 
-                            "error": "Failed to connect to Django API", 
+                except requests.exceptions.RequestException as e:
+                    return {"status": "error", 
+                            "message": f"Failed to connect to Django API: {str(e)}", 
                             } 
         
             finally: 
